@@ -2,6 +2,9 @@
 
 A small production-style paste service built with Next.js, TypeScript, Tailwind CSS, and PostgreSQL. It supports TTL-based expiry, max-view limits, safe HTML rendering, and API + HTML routes for creating and viewing pastes.
 
+- Production app: https://take-home-henna.vercel.app
+- Public source: https://github.com/devesh-1006/pastebin-clone
+
 ## Features
 
 - Create a paste with arbitrary text content
@@ -63,11 +66,13 @@ If no database is configured in local development or tests, the app falls back t
 
 - `DATABASE_URL`: Neon PostgreSQL connection string
 - `APP_URL`: public site origin, such as `https://your-domain.vercel.app`
-- `TEST_MODE`: set to `1` to enable deterministic time-testing
+- `TEST_MODE`: set to `1` only for deterministic time-testing; keep it `0` in production
 
 ## Persistence layer
 
 The application stores paste rows in a PostgreSQL `pastes` table. The table is created automatically on first use so deployment does not require a separate manual migration step. The same schema is safe to run repeatedly because it uses `CREATE TABLE IF NOT EXISTS`.
+
+The production deployment uses a Neon PostgreSQL resource connected through Vercel. Vercel provides `DATABASE_URL` to production functions. Local development and tests may use the in-memory `pg-mem` fallback when no database URL is configured; production refuses that fallback so non-persistent storage cannot appear healthy.
 
 ## Important design decisions
 
@@ -103,12 +108,10 @@ npm run build
 
 ## Deployment
 
-1. Create a Neon project and database.
-2. Copy the connection string from the Neon dashboard and configure it as `DATABASE_URL`.
-3. Create a GitHub repository and push the code.
-4. Import the repo into Vercel.
-5. Add the environment variables in the Vercel dashboard: `DATABASE_URL`, `APP_URL`, `TEST_MODE`.
-6. Deploy the app and confirm the health endpoint responds at `https://your-domain/api/healthz`.
+1. Connect a Neon PostgreSQL resource to the Vercel project for the Production environment. This provides `DATABASE_URL`.
+2. Set `APP_URL` to the deployed origin and `TEST_MODE` to `0`.
+3. Deploy the project from Vercel or run `vercel deploy --prod`.
+4. Confirm `/api/healthz` returns `{"ok":true}`, then verify paste creation and retrieval.
 
 ## Notes for learning
 
