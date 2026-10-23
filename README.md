@@ -57,7 +57,7 @@ A small production-style paste service built with Next.js, TypeScript, Tailwind 
 
 This project is designed for Neon Postgres. Add a valid `DATABASE_URL` in `.env.local` before using the app in a real environment.
 
-If no database is configured, the app falls back to an in-memory `pg-mem` database for local tests and quick smoke checks. Production deployments should always provide `DATABASE_URL`.
+If no database is configured in local development or tests, the app falls back to an in-memory `pg-mem` database for quick smoke checks. Production requires `DATABASE_URL`; startup requests return a service error if it is missing instead of silently using non-persistent storage.
 
 ## Required environment variables
 
@@ -104,7 +104,7 @@ npm run build
 ## Deployment
 
 1. Create a Neon project and database.
-2. Copy the connection string from the Neon dashboard and save it as `DATABASE_URL`.
+2. Copy the connection string from the Neon dashboard and configure it as `DATABASE_URL`.
 3. Create a GitHub repository and push the code.
 4. Import the repo into Vercel.
 5. Add the environment variables in the Vercel dashboard: `DATABASE_URL`, `APP_URL`, `TEST_MODE`.

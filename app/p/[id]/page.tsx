@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export default async function PastePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const requestHeaders = await headers();
-  const currentRequest = new Request("http://localhost", {
+  const currentRequest = new Request("https://paste-viewer.invalid/", {
     headers: requestHeaders,
   });
   const nowMs = getEffectiveNowMs(currentRequest);

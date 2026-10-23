@@ -6,9 +6,18 @@ export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> | { id: string } },
 ) {
+  let id: string;
+  let nowMs: number;
+
   try {
-    const { id } = await Promise.resolve(context.params);
-    const nowMs = getEffectiveNowMs(request);
+    ({ id } = await Promise.resolve(context.params));
+    nowMs = getEffectiveNowMs(request);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Invalid request.";
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
+
+  try {
     const paste = await consumePasteView(id, nowMs);
 
     if (!paste) {
@@ -26,7 +35,7 @@ export async function GET(
       { status: 200 },
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Invalid request.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    console.error("Failed to fetch paste.", error);
+    return NextResponse.json({ error: "Unable to fetch paste." }, { status: 500 });
   }
 }

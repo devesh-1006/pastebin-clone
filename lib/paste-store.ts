@@ -68,8 +68,9 @@ async function ensureSchema() {
     return;
   }
 
-  if (getNeonConnection()) {
-    const sql = getNeonConnection()!;
+  const neonConnection = getNeonConnection();
+  if (neonConnection) {
+    const sql = neonConnection;
     await sql`
       CREATE TABLE IF NOT EXISTS pastes (
         id TEXT PRIMARY KEY,
@@ -85,6 +86,10 @@ async function ensureSchema() {
     await sql`CREATE INDEX IF NOT EXISTS idx_pastes_max_views ON pastes (max_views);`;
     schemaReady = true;
     return;
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("DATABASE_URL must be configured in production.");
   }
 
   const client = createMemoryDatabase();
@@ -136,7 +141,7 @@ export function getPasteUrlBase(requestOrUrl?: Request | string): string {
     return `https://${process.env.VERCEL_URL}`.replace(/\/$/, "");
   }
 
-  return "http://localhost:3000";
+  return "";
 }
 
 export function generatePasteId(): string {
@@ -290,10 +295,15 @@ export async function consumePasteView(id: string, nowMs: number): Promise<Paste
 
 export async function getStorageHealthCheck(): Promise<boolean> {
   try {
-    if (getNeonConnection()) {
-      const sql = getNeonConnection()!;
+    const neonConnection = getNeonConnection();
+    if (neonConnection) {
+      const sql = neonConnection;
       await sql`SELECT 1 as ok`;
       return true;
+    }
+
+    if (process.env.NODE_ENV === "production") {
+      return false;
     }
 
     const client = createMemoryDatabase();
