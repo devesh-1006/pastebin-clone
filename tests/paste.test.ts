@@ -207,6 +207,12 @@ describe("pastebin app", () => {
     expect((await fetchPasteRequest(id)).status).toBe(404);
   });
 
+  it("returns a not-found result from the HTML viewer for unavailable pastes", async () => {
+    await expect(PastePage({ params: Promise.resolve({ id: "missing" }) })).rejects.toThrow(
+      "NEXT_HTTP_ERROR_FALLBACK;404",
+    );
+  });
+
   it("uses simulated time for expiry and ignores it when test mode is disabled", async () => {
     const created = await createPasteRequest({ content: "expiring", ttl_seconds: 10 });
     const { id } = await created.json();
@@ -214,6 +220,7 @@ describe("pastebin app", () => {
 
     expect((await fetchPasteRequest(id, baseNow + 5000)).status).toBe(200);
     expect((await fetchPasteRequest(id, baseNow + 10000)).status).toBe(404);
+    expect((await fetchPasteRequest(id, baseNow + 20000)).status).toBe(404);
 
     process.env.TEST_MODE = "0";
     const unexpired = await createPasteRequest({ content: "normal", ttl_seconds: 60 });
