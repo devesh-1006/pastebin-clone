@@ -11,7 +11,7 @@ export type PasteRecord = {
   views: number;
 };
 
-type NeonQueryResult = { rows?: Record<string, unknown>[] };
+type NeonQueryResult = Record<string, unknown>[];
 
 type MemoryPgClient = {
   connect: () => void;
@@ -202,7 +202,7 @@ export async function getPasteById(id: string, nowMs: number): Promise<PasteReco
       WHERE id = ${id}
     ` as unknown as NeonQueryResult;
 
-    const row = rows.rows?.[0] as Record<string, unknown> | undefined;
+    const row = rows[0];
     if (!row) return null;
     const expiresAt = row.expires_at as string | null | undefined;
     const maxViews = row.max_views as number | null | undefined;
@@ -261,7 +261,7 @@ export async function consumePasteView(id: string, nowMs: number): Promise<Paste
       RETURNING id, content, created_at, expires_at, max_views, views
     ` as unknown as NeonQueryResult;
 
-    const row = rows.rows?.[0] as Record<string, unknown> | undefined;
+    const row = rows[0];
     if (!row) return null;
 
     return {
